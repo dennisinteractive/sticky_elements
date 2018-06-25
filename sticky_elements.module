@@ -131,7 +131,7 @@ function _sticky_elements_types() {
     'timeout' => array(
       'name' => t('Timeout'),
       'config' => array(
-        'offset' => array(
+        'timeout' => array(
           'type' => 'textfield',
           'name' => t('Timeout'),
           '#description' => t('Timeout in milliseconds.'),

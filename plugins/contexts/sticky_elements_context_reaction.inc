@@ -40,7 +40,9 @@ class sticky_elements_context_reaction extends context_reaction {
       if (!isset($context->reactions['sticky_elements_context'])) {
         continue;
       }
-      // @todo add JS settings.
+      if ($elements = $this->fetch_from_context($context, 'values')) {
+        drupal_add_js(array('sticky_elements' => $elements), 'setting');
+      }
     }
   }
 }
