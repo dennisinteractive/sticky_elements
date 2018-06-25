@@ -1,0 +1,270 @@
+<?php
+
+
+/**
+ * Helper form builder for the elements form.
+ */
+function _sticky_elements_elements_form($existing_elements = array()) {
+  $form = array(
+    '#tree' => TRUE,
+    '#title' => t('Sticky Elements'),
+  );
+
+  // Add wrapper to elements.
+  $form['elements'] = array(
+    '#prefix' => '<div id="sticky-elements-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  // Add existing elements to the form if available.
+  if (!empty($existing_elements)) {
+    foreach ($existing_elements as $key => $data) {
+      _sticky_elements_element_form($form, $key, $data, TRUE);
+    }
+  }
+  else {
+    // Add a single item by default.
+    _sticky_elements_element_form($form, 0);
+  }
+
+  $form['sticky_elements_more_elements'] = array(
+    '#type' => 'submit',
+    // #value must be unique across all context reaction forms.
+    '#value' => t('Add sticky element'),
+    '#submit' => array('sticky_elements_contexts_ajax_rebuild_elements'),
+    '#limit_validation_errors' => array(),
+    '#ajax' => array(
+      'callback' => 'sticky_elements_contexts_ajax_reload_elements',
+      'wrapper' => 'sticky-elements-wrapper',
+      'effect' => 'fade',
+    ),
+  );
+
+  return $form;
+}
+
+/**
+ * Implments hook_form_FORM_ID_alter().
+ *
+ * The context form doesn't get passed to form state, so we are altering the form as a workaround.
+ */
+function sticky_elements_form_ctools_export_ui_edit_item_form_alter(&$form, &$form_state, $form_id) {
+  if ($form['#base'] != 'context_ui_form' || !isset($form_state['triggering_element'])) {
+    return;
+  }
+
+  // Current form elements.
+  $elements_form =& $form['reactions']['plugins']['sticky_elements_context'];
+  $elements_form_items =& $elements_form['elements'];
+  $elements_form_state_items =& $form_state['input']['reactions']['plugins']['sticky_elements_context']['elements'];
+
+  switch ($form_state['triggering_element']['#value']) {
+    case 'Add sticky element':
+      _sticky_elements_element_form($elements_form, count($elements_form_state_items), array(), TRUE);
+      break;
+    case 'Remove sticky element':
+      // Extract element key from parent elements.
+      $parent_elements = $form_state['triggering_element']['#parents'];
+      $key = $parent_elements[count($parent_elements) - 2];
+
+      // Remove element from form and reset keys.
+      unset($elements_form_items[$key]);
+      _sticky_elements_element_form_reset_element_keys($elements_form_items);
+
+      // Remove element from form state and reset keys.
+      unset($elements_form_state_items[$key]);
+      _sticky_elements_element_form_reset_element_keys($elements_form_state_items);
+
+      // If there are no sticky element forms, add an empty one ready to be configured.
+      if (empty($elements_form_state_items)) {
+        _sticky_elements_element_form($elements_form, 0);
+      }
+      break;
+  }
+}
+
+/**
+ * Helper to reset element array keys, but preserve string keys.
+ *
+ * @param array $elements
+ */
+function _sticky_elements_element_form_reset_element_keys(&$elements) {
+  $reset_elements = array();
+  foreach ($elements as $key => $element) {
+    // Get elements with integer key and remove from original array.
+    if (is_int($key)) {
+      $reset_elements[] = $element;
+      unset($elements[$key]);
+    }
+  }
+  // Add reset elements back into original element array.
+  $elements = array_merge($elements, $reset_elements);
+}
+
+/**
+ * Get array of sticky elements.
+ *
+ * @return array
+ */
+function _sticky_elements_types() {
+  return array(
+    'element' => array(
+      'name' => t('Element'),
+      'config' => array(
+        'trigger_element' => array(
+          'type' => 'textfield',
+          'name' => t('Trigger Element'),
+          '#description' => t('Type class name without (.), used in above selected "HTML ELEMENT"'),
+        ),
+      ),
+    ),
+    'offset' => array(
+      'name' => t('Offset'),
+      'config' => array(
+        'offset' => array(
+          'type' => 'textfield',
+          'name' => t('Offset'),
+          '#description' => t('Offset in pixels.'),
+        ),
+      ),
+    ),
+    'timeout' => array(
+      'name' => t('Timeout'),
+      'config' => array(
+        'offset' => array(
+          'type' => 'textfield',
+          'name' => t('Timeout'),
+          '#description' => t('Timeout in milliseconds.'),
+        ),
+      ),
+    ),
+  );
+}
+
+/**
+ * Helper form builder for an individual block.
+ */
+function _sticky_elements_element_form(&$form, $key, $data = array(), $removable = FALSE) {
+  $form['elements'][$key] = array(
+    '#type' => 'fieldset',
+    '#prefix' => '<div class="element">',
+    '#suffix' => '</div>',
+  );
+
+  $types = _sticky_elements_types();
+
+  // Remove None placeholder.
+  $options = array('' => 'Select');
+  // We build the options array with all the possible elements available configurations.
+  foreach ($types as $type => $config) {
+    $options[$type] = $config['name'];
+  }
+
+  $form['elements'][$key]['type'] = array(
+    '#type' => 'select',
+    '#title' => t('Type'),
+    '#options' => $options,
+    '#attributes' => array('class' => array('field-element-element')),
+    '#default_value' => isset($data['type']) ? $data['type'] : '',
+    '#ajax' => array(
+      'callback' => 'sticky_elements_contexts_ajax_reload_elements',
+      'wrapper' => 'sticky-elements-wrapper',
+    ),
+    '#description' => t('Type of element you want to place on the page'),
+  );
+
+  if(!empty($data['type'])) {
+    // Sticky element class.
+    $form['elements'][$key]['sticky_element'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Sticky Element',
+      '#default_value' => isset($data['sticky_element']) ? $data['sticky_element'] : '',
+      '#description' => t('Type class name without (.), used in above selected "HTML ELEMENT"'),
+    );
+
+    // Add fields for specified type.
+    $current_type = $data['type'];
+    if (!empty($types[$current_type])) {
+      foreach ($types[$current_type]['config'] as $config_key => $config) {
+        $form['elements'][$key][$config_key] = array(
+          '#type' => $config['type'],
+          '#title' => $config['name'],
+          '#default_value' => isset($data[$config_key]) ? $data[$config_key] : '',
+        );
+        if(isset($config['options'])) $form['elements'][$key][$config_key]['#options'] = $config['options'];
+      }
+    }
+  }
+
+  // Remove sticky item button.
+  if ($removable) {
+    $form['elements'][$key]['remove'] = array(
+      '#type' => 'submit',
+      '#value' => t('Remove sticky element'),
+      '#name' => 'remove-sticky-element-' . $key,
+      '#submit' => array('sticky_elements_contexts_ajax_rebuild_elements'),
+      '#limit_validation_errors' => array(),
+      '#ajax' => array(
+        'callback' => 'sticky_elements_contexts_ajax_reload_elements',
+        'wrapper' => 'sticky-elements-wrapper',
+        'effect' => 'fade',
+      ),
+    );
+  }
+}
+
+/**
+ * Submit handler to rebuild the form.
+ */
+function sticky_elements_contexts_ajax_rebuild_elements($form, &$form_state) {
+  $form_state['rebuild'] = TRUE;
+}
+
+/**
+ * Ajax callback to return element form items.
+ */
+function sticky_elements_contexts_ajax_reload_elements($form, $form_state) {
+  $form_state['rebuild'] = TRUE;
+  return $form['reactions']['plugins']['sticky_elements_context']['elements'];
+}
+
+/**
+ * Implements hook_context_registry().
+ */
+function sticky_elements_context_registry() {
+  return array(
+    'reactions' => array(
+      'sticky_elements_context' => array(
+        'title' => t('Sticky Elements'),
+        'plugin' => 'sticky_elements_context_reaction',
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_context_plugins().
+ */
+function sticky_elements_context_plugins() {
+  $plugins = array();
+  $plugins['sticky_elements_context_reaction'] = array(
+    'handler' => array(
+      'path' => drupal_get_path('module', 'sticky_elements') . '/plugins/contexts',
+      'file' => 'sticky_elements_context_reaction.inc',
+      'class' => 'sticky_elements_context_reaction',
+      'parent' => 'context_reaction',
+    ),
+  );
+  return $plugins;
+}
+
+/**
+ * hook_preprocess_page().
+ *
+ * @param $variables
+ */
+function sticky_elements_preprocess_page(&$variables) {
+  if ($plugin = context_get_plugin('reaction', 'sticky_elements_context')) {
+    $plugin->execute($variables);
+  }
+}

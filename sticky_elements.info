@@ -1,0 +1,3 @@
+name = Sticky Elements
+description = Provides context reaction to make any element on the page sticky
+core = 7.x
