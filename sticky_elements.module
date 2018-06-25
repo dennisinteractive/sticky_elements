@@ -102,7 +102,7 @@ function _sticky_elements_element_form_reset_element_keys(&$elements) {
 }
 
 /**
- * Get array of sticky elements.
+ * Get array of sticky elements and corresponding configuration fields.
  *
  * @return array
  */
@@ -112,9 +112,10 @@ function _sticky_elements_types() {
       'name' => t('Element'),
       'config' => array(
         'trigger_element' => array(
-          'type' => 'textfield',
-          'name' => t('Trigger Element'),
-          '#description' => t('Type class name without (.), used in above selected "HTML ELEMENT"'),
+          '#type' => 'textfield',
+          '#title' => t('Trigger Element'),
+          '#required' => TRUE,
+          '#description' => t('CSS Selector.'),
         ),
       ),
     ),
@@ -122,9 +123,11 @@ function _sticky_elements_types() {
       'name' => t('Offset'),
       'config' => array(
         'offset' => array(
-          'type' => 'textfield',
-          'name' => t('Offset'),
+          '#type' => 'textfield',
+          '#title' => t('Offset'),
+          '#required' => TRUE,
           '#description' => t('Offset in pixels.'),
+          '#element_validate' => array('_sticky_elements_validate_integer_positive'),
         ),
       ),
     ),
@@ -132,13 +135,26 @@ function _sticky_elements_types() {
       'name' => t('Timeout'),
       'config' => array(
         'timeout' => array(
-          'type' => 'textfield',
-          'name' => t('Timeout'),
+          '#type' => 'textfield',
+          '#title' => t('Timeout'),
           '#description' => t('Timeout in milliseconds.'),
+          '#required' => TRUE,
+          '#element_validate' => array('_sticky_elements_validate_integer_positive'),
         ),
       ),
     ),
   );
+}
+
+/**
+ * Validate and cast as integer.
+ */
+function _sticky_elements_validate_integer_positive($element, &$form_state) {
+  element_validate_integer_positive($element, $form_state);
+  // If the value is valid, cast to integer.
+  if (!form_get_error($element)) {
+    form_set_value($element, (int) $element['#value'], $form_state);
+  }
 }
 
 /**
@@ -178,20 +194,17 @@ function _sticky_elements_element_form(&$form, $key, $data = array(), $removable
     $form['elements'][$key]['sticky_element'] = array(
       '#type' => 'textfield',
       '#title' => 'Sticky Element',
+      '#required' => TRUE,
       '#default_value' => isset($data['sticky_element']) ? $data['sticky_element'] : '',
-      '#description' => t('Type class name without (.), used in above selected "HTML ELEMENT"'),
+      '#description' => t('CSS Selector.'),
     );
 
     // Add fields for specified type.
     $current_type = $data['type'];
     if (!empty($types[$current_type])) {
       foreach ($types[$current_type]['config'] as $config_key => $config) {
-        $form['elements'][$key][$config_key] = array(
-          '#type' => $config['type'],
-          '#title' => $config['name'],
-          '#default_value' => isset($data[$config_key]) ? $data[$config_key] : '',
-        );
-        if(isset($config['options'])) $form['elements'][$key][$config_key]['#options'] = $config['options'];
+        $config['#default_value'] = isset($data[$config_key]) ? $data[$config_key] : '';
+        $form['elements'][$key][$config_key] = $config;
       }
     }
   }
