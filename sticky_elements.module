@@ -111,7 +111,7 @@ function _sticky_elements_types() {
     'element' => array(
       'name' => t('Element'),
       'config' => array(
-        'trigger_element' => array(
+        'element' => array(
           '#type' => 'textfield',
           '#title' => t('Trigger Element'),
           '#required' => TRUE,
