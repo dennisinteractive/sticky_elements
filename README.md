@@ -26,9 +26,9 @@ Add the _Sticky Elements_ context reaction and configure:
 CSS selector of the element to stick
 
 ### Type
-| Type            | Value        | Description                                          |
-| --------------- | ------------ | ---------------------------------------------------- |
-| Trigger element | CSS selector | Stop sticking when this element is reached           |
-| Offset          | Pixels       | Stop sticking when this offset is reached            |
-| Timeout         | Milliseconds | Stop sticking when this number of seconds has passed |
+| Type            | Value        | Description                                               |
+| --------------- | ------------ | --------------------------------------------------------- |
+| Trigger element | CSS selector | Stop sticking when this element is reached                |
+| Offset          | Pixels       | Stop sticking when this offset is reached                 |
+| Timeout         | Milliseconds | Stop sticking when this number of milliseconds has passed |
 
