@@ -42,6 +42,9 @@ class sticky_elements_context_reaction extends context_reaction {
       }
       if ($elements = $this->fetch_from_context($context, 'values')) {
         drupal_add_js(array('sticky_elements' => $elements), 'setting');
+        drupal_add_js(libraries_get_path('sticky_elements_js') .'/dist/stickyElement.js', array(
+          'attributes' => array('async' => 'async'),
+        ));
       }
     }
   }
