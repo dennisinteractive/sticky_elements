@@ -279,5 +279,6 @@ function sticky_elements_context_plugins() {
 function sticky_elements_preprocess_page(&$variables) {
   if ($plugin = context_get_plugin('reaction', 'sticky_elements_context')) {
     $plugin->execute($variables);
+    drupal_add_js(libraries_get_path('sticky_elements_js') . '/dist/stickyElements.js');
   }
 }
