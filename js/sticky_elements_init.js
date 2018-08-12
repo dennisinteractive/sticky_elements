@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", function(event) {
         let slotSelector = '#' + event.slot.getSlotElementId();
         let slotElement = document.querySelector(slotSelector);
 
-        sticky_elements.forEach(element => {
+        sticky_elements.elements.forEach(element => {
             let slotChild = element.target.querySelector(slotSelector);
             
             if(element.target === slotElement || slotChild){
