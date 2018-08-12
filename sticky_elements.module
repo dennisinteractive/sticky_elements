@@ -190,13 +190,31 @@ function _sticky_elements_element_form(&$form, $key, $data = array(), $removable
   );
 
   if(!empty($data['type'])) {
-    // Sticky element class.
-    $form['elements'][$key]['sticky_element'] = array(
+    // Sticky element selector.
+    $form['elements'][$key]['sticky_selector'] = array(
       '#type' => 'textfield',
       '#title' => 'Sticky Element',
       '#required' => TRUE,
-      '#default_value' => isset($data['sticky_element']) ? $data['sticky_element'] : '',
+      '#default_value' => isset($data['sticky_selector']) ? $data['sticky_selector'] : '',
       '#description' => t('CSS Selector.'),
+    );
+
+    // Sticky element top
+    $form['elements'][$key]['top'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Top',
+      '#required' => TRUE,
+      '#default_value' => isset($data['top']) ? $data['top'] : '',
+      '#description' => t('Top offset.'),
+    );
+
+    // Sticky element media query
+    $form['elements'][$key]['media_query'] = array(
+      '#type' => 'textfield',
+      '#title' => 'Media Query',
+      '#required' => FALSE,
+      '#default_value' => isset($data['media_query']) ? $data['media_query'] : '',
+      '#description' => t('Media query range that allows sticky functionality.'),
     );
 
     // Add fields for specified type.
@@ -279,6 +297,5 @@ function sticky_elements_context_plugins() {
 function sticky_elements_preprocess_page(&$variables) {
   if ($plugin = context_get_plugin('reaction', 'sticky_elements_context')) {
     $plugin->execute($variables);
-    drupal_add_js(libraries_get_path('sticky_elements_js') . '/dist/stickyElements.js');
   }
 }
