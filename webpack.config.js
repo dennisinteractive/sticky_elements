@@ -2,7 +2,7 @@ const path = require("path");
 
 module.exports = {
     entry: require.resolve("./js/sticky_elements_init.js"),
-    mode: 'development',
+    mode: 'production',
     output: {
         path: path.resolve(__dirname, "dist"),
         filename: "sticky_elements_init.min.js"
