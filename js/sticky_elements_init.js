@@ -1,7 +1,8 @@
 (function () {
   Drupal.behaviors.stickyElementsBehavior = {
-    attach: function (context, settings) {      
-      var initSticky = function() {
+    attach: function (context, settings) {
+
+      function initSticky() {
         // Main init entry
         StickyElements.init(settings.sticky_elements);
 
@@ -14,12 +15,12 @@
               let slotChild = element.target.querySelector(slotSelector);
               
               if(element.target === slotElement || slotChild){
-                  if(element.type !== 'timeout') {
+                if(element.type !== 'timeout') {
                   this.setHeight(element.parent, element.value);
-                  }else{
+                }else{
                   this.setHeight(element.target);
-                  }
-                  this.setAllEnds(element);
+                }
+                this.setAllEnds(element);
               }
           });
         }.bind(StickyElements));
@@ -31,7 +32,7 @@
       }else {
         document.addEventListener("sticky-element:load", function(event){
           initSticky();
-        });
+        }.bind(window));
       }
     }
   };
