@@ -45,9 +45,7 @@ class sticky_elements_context_reaction extends context_reaction {
         drupal_add_js(libraries_get_path('sticky_elements_js') . '/dist/stickyElements.min.js', array(
           'attributes' => array('async' => 'async'),
         ));
-        drupal_add_js(drupal_get_path('module', 'sticky_elements') . '/js/sticky_elements_init.js', array(
-          'attributes' => array('async' => 'async'),
-        ));
+        drupal_add_js(drupal_get_path('module', 'sticky_elements') . '/js/sticky_elements_init.js');
       }
     }
   }
