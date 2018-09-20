@@ -17,9 +17,9 @@
 
                 if(element.target === slotElement || slotChild){
                   if(element.type !== 'timeout') {
-                    this.setHeight(element.parent, element.value);
+                    this.setDimensions(element.parent, element.value);
                   }else{
-                    this.setHeight(element.target);
+                    this.setDimensions(element.target);
                   }
                   this.setAllEnds(element);
                 }
