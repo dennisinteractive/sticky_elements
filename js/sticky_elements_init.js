@@ -8,7 +8,7 @@
           StickyElements.init(settings.sticky_elements);
 
           // We rejig the slot on in the event that a DFP slot is being targeted
-          googletag.cmd.push(function() {
+          googletag.cmd.push(function(){
             googletag.pubads().addEventListener('slotRenderEnded', function (event) {
               let slotSelector = '#' + event.slot.getSlotElementId();
               let slotElement = document.querySelector(slotSelector);
