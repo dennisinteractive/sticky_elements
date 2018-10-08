@@ -199,6 +199,15 @@ function _sticky_elements_element_form(&$form, $key, $data = array(), $removable
       '#description' => t('CSS Selector.'),
     );
 
+    // Sticky element container
+    $form['elements'][$key]['container'] = array(
+      '#type' => 'checkbox',
+      '#title' => 'Wrap in container',
+      '#required' => FALSE,
+      '#default_value' => isset($data['container']) ? $data['container'] : '',
+      '#description' => t('Should the sticky element be wrapped in a container?'),
+    );
+
     // Sticky element top
     $form['elements'][$key]['top'] = array(
       '#type' => 'textfield',
